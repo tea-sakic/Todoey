@@ -12,23 +12,27 @@ class ToDoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard
+     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in:.userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+//    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
+       
+        loadData()
         
-        let newItem = Item(title: "Buy apple", done: false)
-        itemArray.append(newItem)
+//        let newItem = Item(title: "Buy apple", done: false)
+//        itemArray.append(newItem)
+//
+//        let newItem2 = Item(title: "Buy ipad", done: false)
+//        itemArray.append(newItem2)
+//
+//        let newItem3 = Item(title: "Buy mackbook", done: false)
+//        itemArray.append(newItem3)
         
-        let newItem2 = Item(title: "Buy ipad", done: false)
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item(title: "Buy mackbook", done: false)
-        itemArray.append(newItem3)
-        
-        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
-            itemArray = items
-        }
+//        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
+//            itemArray = items
+//        }
     }
 
     // MARK - Tableview Datasource Methods
@@ -56,9 +60,12 @@ class ToDoListViewController: UITableViewController {
        
         itemArray[indexPath.row].isItDone = !itemArray[indexPath.row].isItDone
         
-      tableView.reloadData()
+        saveItems()
+        
+        tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
+        
         
     }
 
@@ -77,9 +84,9 @@ class ToDoListViewController: UITableViewController {
             
             self.itemArray.append(newItemm)
             
-           self.defaults.set(self.itemArray, forKey: "ToDoListArray")
+ //          self.defaults.set(self.itemArray, forKey: "ToDoListArray")
             
-            self.tableView.reloadData()
+            self.saveItems()
             
         }
         
@@ -94,6 +101,32 @@ class ToDoListViewController: UITableViewController {
         
     }
     
+    func saveItems() {
+        
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }  catch {
+            print("Error encoding itemArray!")
+        }
+         self.tableView.reloadData()
+    }
+    
+    func loadData() {
+        
+        if let data = try? Data(contentsOf: dataFilePath!) {
+         let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("error decoding array")
+            }
+           
+        }
+        
+    }
     
 }
 
